@@ -8,27 +8,40 @@ interface ResultViewProps {
   content: string;
   onBack: () => void;
   onRetry: () => void;
+  onNextStep?: () => void;
 }
 
-export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, onRetry }) => {
+export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, onRetry, onNextStep }) => {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <button 
           onClick={onBack}
           className="flex items-center text-gray-500 hover:text-emerald-600 transition-colors group"
         >
           <Icon name="ArrowLeft" className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
-          Back to Dashboard
+          {onNextStep ? 'Back to Step' : 'Back to Dashboard'}
         </button>
 
-        <button 
-          onClick={onRetry}
-          className="flex items-center text-emerald-600 font-semibold hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg transition-colors"
-        >
-          <Icon name="RefreshCw" className="mr-2" size={18} />
-          New Query
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={onRetry}
+            className="flex items-center text-emerald-600 font-semibold hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg transition-colors border border-emerald-100"
+          >
+            <Icon name="RefreshCw" className="mr-2" size={18} />
+            Refine
+          </button>
+          
+          {onNextStep && (
+            <button 
+              onClick={onNextStep}
+              className="flex items-center text-white font-bold bg-gray-900 hover:bg-black px-6 py-2 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+            >
+              Next Step
+              <Icon name="ArrowRight" className="ml-2" size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">

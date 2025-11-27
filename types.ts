@@ -14,8 +14,16 @@ export interface FormData {
   requirements?: string;
 }
 
+export interface ProjectContext {
+  name: string;
+  description: string;
+  context: string;
+}
+
 export enum AppState {
   DASHBOARD = 'DASHBOARD',
   FORM = 'FORM',
-  RESULT = 'RESULT'
+  RESULT = 'RESULT',
+  WORKFLOW_SETUP = 'WORKFLOW_SETUP',
+  WORKFLOW = 'WORKFLOW'
 }

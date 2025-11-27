@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { PromptForm } from './components/PromptForm';
 import { ResultView } from './components/ResultView';
-import { PromptTemplate, FormData, AppState } from './types';
+import { ProjectSetup } from './components/ProjectSetup';
+import { WorkflowController } from './components/WorkflowController';
+import { PromptTemplate, FormData, AppState, ProjectContext } from './types';
 import { generateProjectAdvice } from './services/geminiService';
 import { Icon } from './components/Icon';
 
@@ -11,21 +13,26 @@ const App: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<PromptTemplate | null>(null);
   const [resultContent, setResultContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [projectContext, setProjectContext] = useState<ProjectContext | null>(null);
 
+  // --- DASHBOARD ACTIONS ---
   const handleSelectPrompt = (prompt: PromptTemplate) => {
     setSelectedPrompt(prompt);
     setAppState(AppState.FORM);
     window.scrollTo(0, 0);
   };
 
+  const handleStartWorkflow = () => {
+    setAppState(AppState.WORKFLOW_SETUP);
+    window.scrollTo(0, 0);
+  };
+
+  // --- SINGLE PROMPT MODE ---
   const handleFormSubmit = async (data: FormData) => {
     if (!selectedPrompt) return;
 
     setIsLoading(true);
     const finalPrompt = selectedPrompt.template(data);
-    
-    // Simulate navigation to result immediately while loading? 
-    // No, better to show loading state on form then switch.
     
     const response = await generateProjectAdvice(finalPrompt);
     setResultContent(response);
@@ -38,12 +45,24 @@ const App: React.FC = () => {
     setAppState(AppState.DASHBOARD);
     setSelectedPrompt(null);
     setResultContent('');
+    setProjectContext(null); // Reset project context when exiting to dash
     window.scrollTo(0, 0);
   };
 
   const handleRetry = () => {
     setAppState(AppState.FORM);
     setResultContent('');
+  };
+
+  // --- WORKFLOW ACTIONS ---
+  const handleProjectSetupComplete = (data: ProjectContext) => {
+    setProjectContext(data);
+    setAppState(AppState.WORKFLOW);
+  };
+
+  const handleWorkflowExit = () => {
+    // Maybe show a "Project Completed" screen? For now go to dashboard.
+    handleBackToDashboard();
   };
 
   return (
@@ -64,10 +83,15 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-grow">
+        {/* DASHBOARD */}
         {appState === AppState.DASHBOARD && (
-          <Dashboard onSelectPrompt={handleSelectPrompt} />
+          <Dashboard 
+            onSelectPrompt={handleSelectPrompt} 
+            onStartWorkflow={handleStartWorkflow}
+          />
         )}
         
+        {/* SINGLE PROMPT FORM */}
         {appState === AppState.FORM && selectedPrompt && (
           <PromptForm 
             prompt={selectedPrompt} 
@@ -77,6 +101,7 @@ const App: React.FC = () => {
           />
         )}
 
+        {/* SINGLE PROMPT RESULT */}
         {appState === AppState.RESULT && selectedPrompt && (
           <ResultView 
             title={selectedPrompt.title}
@@ -84,6 +109,22 @@ const App: React.FC = () => {
             onBack={handleBackToDashboard}
             onRetry={handleRetry}
           />
+        )}
+
+        {/* WORKFLOW SETUP */}
+        {appState === AppState.WORKFLOW_SETUP && (
+          <ProjectSetup 
+            onNext={handleProjectSetupComplete} 
+            onCancel={handleBackToDashboard} 
+          />
+        )}
+
+        {/* WORKFLOW CONTROLLER */}
+        {appState === AppState.WORKFLOW && projectContext && (
+           <WorkflowController 
+             projectContext={projectContext}
+             onExit={handleWorkflowExit}
+           />
         )}
       </main>
 
