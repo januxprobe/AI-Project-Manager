@@ -4,12 +4,13 @@ import { PromptForm } from './components/PromptForm';
 import { ResultView } from './components/ResultView';
 import { ProjectSetup } from './components/ProjectSetup';
 import { ProjectView } from './components/ProjectView';
+import { LandingPage } from './components/LandingPage';
 import { PromptTemplate, FormData, AppState, ProjectContext, Project, ProjectArtifact } from './types';
 import { generateProjectAdvice } from './services/geminiService';
 import { Icon } from './components/Icon';
 
 const App: React.FC = () => {
-  const [appState, setAppState] = useState<AppState>(AppState.DASHBOARD);
+  const [appState, setAppState] = useState<AppState>(AppState.LANDING);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptTemplate | null>(null);
@@ -107,27 +108,35 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={goDashboard}>
-            <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center mr-3">
-              <span className="text-white font-bold text-lg">AI</span>
+      {/* Show Header only if NOT on Landing Page */}
+      {appState !== AppState.LANDING && (
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center cursor-pointer" onClick={goDashboard}>
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center mr-3">
+                <span className="text-white font-bold text-lg">AI</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900 tracking-tight">Central</span>
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">Central</span>
+            <div className="text-sm font-medium text-gray-500 flex items-center">
+              {activeProject && (
+                <span className="mr-4 hidden md:block px-3 py-1 bg-gray-100 rounded-full text-gray-600 border border-gray-200">
+                    Current: {activeProject.name}
+                </span>
+              )}
+              <span className="hidden sm:inline mr-2">Powered by</span>
+              <span className="bg-gradient-to-r from-blue-500 to-emerald-500 text-transparent bg-clip-text font-bold">Gemini 3 Pro</span>
+            </div>
           </div>
-          <div className="text-sm font-medium text-gray-500 flex items-center">
-             {activeProject && (
-               <span className="mr-4 hidden md:block px-3 py-1 bg-gray-100 rounded-full text-gray-600 border border-gray-200">
-                  Current: {activeProject.name}
-               </span>
-             )}
-            <span className="hidden sm:inline mr-2">Powered by</span>
-            <span className="bg-gradient-to-r from-blue-500 to-emerald-500 text-transparent bg-clip-text font-bold">Gemini 3 Pro</span>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="flex-grow">
+        {/* LANDING PAGE */}
+        {appState === AppState.LANDING && (
+          <LandingPage onGetStarted={goDashboard} />
+        )}
+
         {/* DASHBOARD: LIST PROJECTS */}
         {appState === AppState.DASHBOARD && (
           <Dashboard 
@@ -183,11 +192,14 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-white border-t border-gray-100 py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
-          <p>© {new Date().getFullYear()} AI Central Project Manager. Not affiliated with OpenAI. Using Google Gemini API.</p>
-        </div>
-      </footer>
+      {/* Show Footer only if NOT on Landing Page (Landing has its own) */}
+      {appState !== AppState.LANDING && (
+        <footer className="bg-white border-t border-gray-100 py-8 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
+            <p>© {new Date().getFullYear()} AI Central Project Manager. Not affiliated with OpenAI. Using Google Gemini API.</p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };

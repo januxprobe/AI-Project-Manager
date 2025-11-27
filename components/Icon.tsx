@@ -13,7 +13,11 @@ import {
   ArrowRight,
   ArrowLeft,
   Loader2,
-  Sparkles
+  Sparkles,
+  Rocket,
+  Zap,
+  BarChart3,
+  Lock
 } from 'lucide-react';
 
 const icons: Record<string, React.FC<any>> = {
@@ -30,7 +34,11 @@ const icons: Record<string, React.FC<any>> = {
   ArrowRight,
   ArrowLeft,
   Loader2,
-  Sparkles
+  Sparkles,
+  Rocket,
+  Zap,
+  BarChart3,
+  Lock
 };
 
 interface IconProps {

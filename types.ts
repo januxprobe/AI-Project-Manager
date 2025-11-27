@@ -35,6 +35,7 @@ export interface Project extends ProjectContext {
 }
 
 export enum AppState {
+  LANDING = 'LANDING',
   DASHBOARD = 'DASHBOARD',
   PROJECT_SETUP = 'PROJECT_SETUP',
   PROJECT_VIEW = 'PROJECT_VIEW',
