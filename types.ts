@@ -20,10 +20,24 @@ export interface ProjectContext {
   context: string;
 }
 
+export interface ProjectArtifact {
+  id: string;
+  promptId: number;
+  title: string;
+  content: string;
+  timestamp: number;
+}
+
+export interface Project extends ProjectContext {
+  id: string;
+  createdAt: number;
+  artifacts: ProjectArtifact[];
+}
+
 export enum AppState {
   DASHBOARD = 'DASHBOARD',
+  PROJECT_SETUP = 'PROJECT_SETUP',
+  PROJECT_VIEW = 'PROJECT_VIEW',
   FORM = 'FORM',
-  RESULT = 'RESULT',
-  WORKFLOW_SETUP = 'WORKFLOW_SETUP',
-  WORKFLOW = 'WORKFLOW'
+  RESULT = 'RESULT'
 }

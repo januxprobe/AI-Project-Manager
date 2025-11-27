@@ -7,11 +7,12 @@ interface ResultViewProps {
   title: string;
   content: string;
   onBack: () => void;
-  onRetry: () => void;
-  onNextStep?: () => void;
+  onRetry?: () => void;
+  onSave?: (content: string) => void;
+  isSavedMode?: boolean;
 }
 
-export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, onRetry, onNextStep }) => {
+export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, onRetry, onSave, isSavedMode = false }) => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -20,26 +21,35 @@ export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, 
           className="flex items-center text-gray-500 hover:text-emerald-600 transition-colors group"
         >
           <Icon name="ArrowLeft" className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
-          {onNextStep ? 'Back to Step' : 'Back to Dashboard'}
+          {isSavedMode ? 'Back to Project' : 'Discard & Back'}
         </button>
 
         <div className="flex space-x-3">
-          <button 
-            onClick={onRetry}
-            className="flex items-center text-emerald-600 font-semibold hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg transition-colors border border-emerald-100"
-          >
-            <Icon name="RefreshCw" className="mr-2" size={18} />
-            Refine
-          </button>
-          
-          {onNextStep && (
+          {onRetry && !isSavedMode && (
             <button 
-              onClick={onNextStep}
-              className="flex items-center text-white font-bold bg-gray-900 hover:bg-black px-6 py-2 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+              onClick={onRetry}
+              className="flex items-center text-emerald-600 font-semibold hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg transition-colors border border-emerald-100"
             >
-              Next Step
-              <Icon name="ArrowRight" className="ml-2" size={18} />
+              <Icon name="RefreshCw" className="mr-2" size={18} />
+              Refine
             </button>
+          )}
+          
+          {onSave && !isSavedMode && (
+            <button 
+              onClick={() => onSave(content)}
+              className="flex items-center text-white font-bold bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-lg transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Icon name="CheckCircle" className="mr-2" size={18} />
+              Save to Project
+            </button>
+          )}
+
+          {isSavedMode && (
+             <div className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
+                <Icon name="CheckCircle" className="mr-2" size={18} />
+                Saved
+             </div>
           )}
         </div>
       </div>
@@ -47,8 +57,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, 
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gray-900 p-8 text-white border-b border-gray-800">
           <div className="flex items-center space-x-3">
-            <Icon name="Sparkles" className="text-emerald-400" />
-            <h2 className="text-2xl font-bold">AI Strategy: {title}</h2>
+            <Icon name={isSavedMode ? "Layers" : "Sparkles"} className={isSavedMode ? "text-gray-300" : "text-emerald-400"} />
+            <h2 className="text-2xl font-bold">{title}</h2>
           </div>
         </div>
         
