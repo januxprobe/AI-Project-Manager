@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Icon } from './Icon';
 
 interface ResultViewProps {
@@ -40,6 +41,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ title, content, onBack, 
         
         <div className="p-8 md:p-12 prose prose-emerald max-w-none">
           <ReactMarkdown
+             remarkPlugins={[remarkGfm]}
              components={{
               h1: ({node, ...props}) => <h1 className="text-3xl font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100" {...props} />,
               h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-4" {...props} />,
