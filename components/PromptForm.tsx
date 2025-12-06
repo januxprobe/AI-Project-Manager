@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PromptTemplate, FormData } from '../types';
 import { Icon } from './Icon';
 
@@ -26,7 +26,8 @@ export const PromptForm: React.FC<PromptFormProps> = ({
     ...initialData
   });
 
-  // Update local state if initialData changes (e.g. switching steps in workflow)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
@@ -37,6 +38,44 @@ export const PromptForm: React.FC<PromptFormProps> = ({
     e.preventDefault();
     onSubmit(formData);
   };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        setFormData(prev => ({ ...prev, context: text }));
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handlePasteClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setFormData(prev => ({ ...prev, context: text }));
+    } catch (err) {
+      console.error("Failed to read clipboard:", err);
+      // Fallback for browsers that block clipboard access without direct user gesture in some contexts
+      alert("Please press Ctrl+V / Cmd+V to paste manually if the button doesn't work.");
+    }
+  };
+
+  const isMeetingParser = prompt.id === 11;
+  const contextLabel = isMeetingParser ? "Raw Meeting Notes" : "Context & Challenges";
+  const contextDescription = isMeetingParser 
+    ? "Paste the raw text from your meeting transcript or notes here." 
+    : "Describe the problem you are facing or the current situation.";
+
+  // Show input if it's the standard form OR if it's the meeting parser (even in workflow mode)
+  const showContextInput = !isWorkflow || isMeetingParser;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -60,31 +99,18 @@ export const PromptForm: React.FC<PromptFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {/* If workflow, we hide these or show them as read-only summary */}
-          {isWorkflow ? (
+          {/* READ-ONLY SUMMARY for Workflow (except Meeting Parser) */}
+          {isWorkflow && !isMeetingParser && (
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-sm text-emerald-800">
-               <div className="font-bold mb-1">Context Applied:</div>
-               <p className="opacity-80 line-clamp-2">{formData.context}</p>
-               <div className="font-bold mt-2 mb-1">Project:</div>
+               <div className="font-bold mb-1">Project:</div>
                <p className="opacity-80 line-clamp-2">{formData.projectDescription}</p>
+               <div className="font-bold mt-2 mb-1">Context Applied:</div>
+               <p className="opacity-80 line-clamp-2">{formData.context}</p>
             </div>
-          ) : (
-            <>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Context & Challenges
-                </label>
-                <p className="text-xs text-gray-500 mb-3">Describe the problem you are facing or the current situation.</p>
-                <textarea
-                  required
-                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
-                  rows={3}
-                  placeholder={prompt.placeholderContext}
-                  value={formData.context}
-                  onChange={(e) => setFormData({...formData, context: e.target.value})}
-                />
-              </div>
+          )}
 
+          {/* PROJECT DESCRIPTION (Only if NOT workflow) */}
+          {!isWorkflow && (
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Project Description
@@ -99,7 +125,56 @@ export const PromptForm: React.FC<PromptFormProps> = ({
                   onChange={(e) => setFormData({...formData, projectDescription: e.target.value})}
                 />
               </div>
-            </>
+          )}
+
+          {/* CONTEXT INPUT SECTION */}
+          {showContextInput && (
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <label className="block text-sm font-bold text-gray-700">
+                    {contextLabel}
+                  </label>
+                  
+                  {/* Toolbar */}
+                  <div className="flex space-x-2">
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      className="hidden" 
+                      accept=".txt,.md,.csv" 
+                      onChange={handleFileUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs flex items-center bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-colors border border-gray-200"
+                      title="Upload text file"
+                    >
+                      <Icon name="Upload" size={14} className="mr-1.5" />
+                      Upload
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePasteClipboard}
+                      className="text-xs flex items-center bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-colors border border-gray-200"
+                      title="Paste from clipboard"
+                    >
+                      <Icon name="Clipboard" size={14} className="mr-1.5" />
+                      Paste
+                    </button>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-gray-500 mb-3">{contextDescription}</p>
+                <textarea
+                  required
+                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none font-mono text-sm"
+                  rows={isMeetingParser ? 12 : 4}
+                  placeholder={prompt.placeholderContext}
+                  value={formData.context}
+                  onChange={(e) => setFormData({...formData, context: e.target.value})}
+                />
+              </div>
           )}
 
           <div>
@@ -129,12 +204,12 @@ export const PromptForm: React.FC<PromptFormProps> = ({
               {isLoading ? (
                 <>
                   <Icon name="Loader2" className="animate-spin mr-3" />
-                  Generating Intelligence...
+                  Processing...
                 </>
               ) : (
                 <>
                   <Icon name="Sparkles" className="mr-2" />
-                  Generate Strategy
+                  {isMeetingParser ? "Process Notes" : "Generate Strategy"}
                 </>
               )}
             </button>

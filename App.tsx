@@ -88,14 +88,11 @@ const App: React.FC = () => {
 
     const updatedProject = {
       ...activeProject,
-      artifacts: [...activeProject.artifacts.filter(a => a.promptId !== selectedPrompt.id), newArtifact] // Replace existing if any for this step
+      artifacts: [...activeProject.artifacts.filter(a => a.promptId !== selectedPrompt.id), newArtifact]
     };
 
-    // Update state
     setProjects(prev => prev.map(p => p.id === activeProject.id ? updatedProject : p));
     setActiveProject(updatedProject);
-    
-    // Go back to project view
     goProjectView(updatedProject);
   };
 
@@ -108,7 +105,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Show Header only if NOT on Landing Page */}
+      {/* HEADER */}
       {appState !== AppState.LANDING && (
         <header className="bg-white shadow-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -173,13 +170,15 @@ const App: React.FC = () => {
             isLoading={isLoading}
             initialData={{
               projectDescription: activeProject.description,
-              context: activeProject.context
+              // IMPORTANT: For Meeting Notes Parser (ID 11), we start with empty context to allow pasting notes.
+              // For others, we inherit the project context.
+              context: selectedPrompt.id === 11 ? '' : activeProject.context
             }}
-            isWorkflow={true} // Use read-only context style
+            isWorkflow={true}
           />
         )}
 
-        {/* RESULT VIEW (GENERATED OR SAVED) */}
+        {/* RESULT VIEW */}
         {appState === AppState.RESULT && (selectedPrompt || activeArtifact) && (
           <ResultView 
             title={selectedPrompt?.title || activeArtifact?.title || 'Result'}
@@ -192,7 +191,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Show Footer only if NOT on Landing Page (Landing has its own) */}
+      {/* FOOTER */}
       {appState !== AppState.LANDING && (
         <footer className="bg-white border-t border-gray-100 py-8 mt-auto">
           <div className="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">

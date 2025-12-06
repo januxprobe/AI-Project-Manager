@@ -17,7 +17,10 @@ import {
   Rocket,
   Zap,
   BarChart3,
-  Lock
+  Lock,
+  ClipboardList,
+  Upload,
+  Clipboard
 } from 'lucide-react';
 
 const icons: Record<string, React.FC<any>> = {
@@ -38,7 +41,10 @@ const icons: Record<string, React.FC<any>> = {
   Rocket,
   Zap,
   BarChart3,
-  Lock
+  Lock,
+  ClipboardList,
+  Upload,
+  Clipboard
 };
 
 interface IconProps {

@@ -90,5 +90,36 @@ export const PROMPTS: PromptTemplate[] = [
     placeholderContext: "e.g., Morale is low due to recent overtime...",
     placeholderProject: "e.g., High-pressure product launch...",
     template: (data: FormData) => `I am ${data.context}. As a project manager for ${data.projectDescription}, I need to keep my team motivated and productive. Can you provide strategies for managing team dynamics, resolving conflicts, and enhancing team collaboration? Additionally, suggest ways to recognize and reward team contributions to maintain high morale throughout the project. I want you to ${data.requirements || "suggest specific team-building activities"}.`
+  },
+  {
+    id: 11,
+    title: "Meeting Notes Parser",
+    iconName: "ClipboardList",
+    description: "Convert raw, messy meeting notes into a clean, organized task list.",
+    placeholderContext: "Paste your raw meeting notes here (e.g. Bob said he will fix the login bug by Friday...)",
+    placeholderProject: "e.g., Weekly Engineering Sync",
+    template: (data: FormData) => `You are an expert project manager and operations analyst. Your job is to convert raw, messy meeting notes into a clean, organized task list.
+
+Context/Project: ${data.projectDescription}
+
+Instructions:
+- Analyze the meeting notes thoroughly.
+- Extract every actionable item, even if implied.
+- Group tasks by owner (person or team).
+
+For each task, include:
+- Task description (clear, concise, actionable)
+- Deadline (only if mentioned or clearly implied)
+- Dependencies (if noted)
+- Status if stated (e.g., pending, in-progress)
+- Remove fluff, discussions, or irrelevant commentary.
+- If ownership is unclear, assign it to “Unassigned” and note it.
+
+Turn the following meeting notes into a structured action items list following the rules above.
+
+Meeting Notes:
+${data.context}
+
+${data.requirements ? `Additional Requirements: ${data.requirements}` : ''}`
   }
 ];
